@@ -11,7 +11,7 @@ class Pacman {
       fill: 'yellow',
       stroke: 'black',
       lineWidth: 0.5,
-      angle: 0.2,
+      angle: Math.PI,
     }, pacman);
     this.options = Object.assign({
       gravity: 0.1,
@@ -25,24 +25,17 @@ class Pacman {
   draw () {
     const { context: ctx, grid } = this;
 
-    const { x, y, radius, stroke, lineWidth, fill, mouth, angle: angl } = this.pacman;
+    const { x, y, angle } = this.pacman;
     const { guide } = this.options;
 
     if (guide) {
       grid.draw();
     }
 
-    const angle = angl * Math.PI * mouth;
     ctx.save();
-    ctx.fillStyle = fill;
-    ctx.strokeStyle = stroke;
-    ctx.lineWidth = lineWidth;
-    ctx.beginPath();
-    ctx.arc(x, y, radius, angle, -angle);
-    ctx.lineTo(x, y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    this.render();
     ctx.restore();
   }
 
@@ -70,11 +63,31 @@ class Pacman {
   }
 
   move () {
-    setInterval(() => {
+    const interval = setInterval(() => {
       this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
       this.draw();
       this.update();
+      if (Math.abs(this.options.yspeed) < 0.5 && Math.abs(this.options.xspeed) < 0.5 && this.pacman.mouth < 0.1) {
+        clearInterval(interval);
+      }
     }, 1000.0 / 60.0); // 60 fps
+  }
+
+  render () {
+    const { context: ctx } = this;
+    const { radius, stroke, lineWidth, fill, mouth } = this.pacman;
+
+    const angle = Math.PI + mouth;
+
+    ctx.fillStyle = fill;
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = lineWidth;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, angle, -angle);
+    ctx.lineTo(0, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
   }
 }
 
